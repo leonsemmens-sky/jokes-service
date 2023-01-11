@@ -52,7 +52,7 @@ app.get("/jokes", async (req, res, next) => {
 app.post("/jokes", async (req, res) => {
 	const values = {
 		joke: req.body.joke,
-		tags: req.body.tags,
+		tags: req.body.tags.toLowerCase(),
 	};
 
 	const newJoke = await Joke.create(values);
