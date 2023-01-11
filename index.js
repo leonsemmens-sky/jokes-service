@@ -12,21 +12,28 @@ app.get("/jokes", async (req, res, next) => {
 		// TODO - filter the jokes by tags and content
 		const where = {};
 		if (req.query.tags) {
-			let tagsQuery = req.query.tags;
+			let tagsQuery = req.query.tags; // 'tag1,tag2;tag3' OR ['tag1,tag2', 'tag3']
 			if (Array.isArray(tagsQuery)) {
-				tagsQuery = tagsQuery.join(";");
+				tagsQuery = tagsQuery.join(";"); // 'tag1,tag2;tag3'
 			}
 			where.tags = {
-				[Op.or]: tagsQuery.split(";").map((tags) => {
-					return {
-						[Op.and]: tags
-							.split(",")
-							.map((tag) => tag.trim().toLowerCase())
-							.map((tag) => {
-								return { [Op.like]: `%${tag}%` };
-							}),
-					};
-				}),
+				// ['tag1,tag2' 'tag3']
+				[Op.or]: tagsQuery
+					.split(";")
+					// [{[Op.and]: patterns}, {[Op.and]: patterns}]
+					.map((tags) => {
+						// 'tag1,tag2'
+						return {
+							[Op.and]: tags // make patterns
+								.split(",")
+								// ['tag1', 'tag2']
+								.map((tag) => tag.trim().toLowerCase()) // sanitize each tag
+								// [{[Op.like]: "%tag1%"}, {[Op.like]: "%tag2%"}]
+								.map((tag) => {
+									return { [Op.like]: `%${tag}%` }; // replace tag with pattern
+								}),
+						};
+					}), // result: [{[Op.and]: [{[Op.like]: "%tag1%"}, {[Op.like]: "%tag2%"}]}, {[Op.and]: [{[Op.like]: "%tag3%"}]}]
 			};
 		}
 		if (req.query.content) {
