@@ -24,12 +24,14 @@ app.get("/jokes", async (req, res, next) => {
 					.map((tags) => {
 						// 'tag1,tag2'
 						return {
-							[Op.like]: tags // make patterns
+							[Op.and]: tags // make patterns
 								.split(",")
 								// ['tag1', 'tag2']
 								.map((tag) => tag.trim().toLowerCase()) // sanitize each tag
 								// [{[Op.like]: "%tag1%"}, {[Op.like]: "%tag2%"}]
-								.map((tag) => ({ [Op.like]: `%${tag}%` })), // replace tag with pattern
+								.map((tag) => {
+									return { [Op.like]: `%${tag}%` };
+								}), // replace tag with pattern
 						};
 					}), // result: [{[Op.and]: [{[Op.like]: "%tag1%"}, {[Op.like]: "%tag2%"}]}, {[Op.and]: [{[Op.like]: "%tag3%"}]}]
 			};
